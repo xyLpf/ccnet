@@ -1,21 +1,23 @@
 import numpy as np
-from get_data import get_data_fn,data_fn
 from model import CCNet
 
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF,WhiteKernel,ConstantKernel
-
-
-
-def f(x):
-	return (x+0.5>=0)*np.sin(64*(x+0.5)**4)#-1.0*(x>0)+numpy.
+def data_fn(x):
+	k=10.0
+	return np.concatenate((np.sin(2*np.pi*k*x[:,[0]]),np.cos(2*np.pi*k*x[:,[0]])),1)
+	
+def get_data_fn(n_samples=1000,noise=0.2,seed=0):
+	np.random.seed(seed)
+	X=np.random.random(size=(n_samples,1))*2-1
+	Y=data_fn(X)+np.random.normal(0.0,np.ones((X.shape[0],2))*noise)
+	return X,Y
+	
 
 np.random.seed(0)
-x_train=np.random.random(size=(70,1))-0.5
-y_train=f(x_train)+np.random.normal(0.0,0.01,size=x_train.shape)
 
 #n_epochs=500
-n_epochs=2000
+n_epochs=1000
 batch_size=700
 
 
@@ -30,7 +32,7 @@ yp_gp=gp.predict(Xp,return_std=False)
 
 
 
-cc=CCNet(100,do_rate=0.2,id_dropout=0.0)
+cc=CCNet(50,do_rate=0.3,id_dropout=0.0)
 cc.fit(X,Y,epochs=n_epochs,batch_size=batch_size,verbose=True)
 
 

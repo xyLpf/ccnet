@@ -1,5 +1,4 @@
 import numpy as np
-from get_data import get_data_fn,data_fn
 from model import CCNet
 
 from sklearn.gaussian_process import GaussianProcessRegressor
