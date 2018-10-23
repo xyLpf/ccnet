@@ -13,6 +13,7 @@ Examples use scikit-learn and matplotlib
 ## API
 
 Initialize:
+
   cc=CCNet(num_neighbors=10,do_rate=0.1,id_dropout=0.02,shuffle=False,model=None)
 
 Fit model:
