@@ -17,8 +17,8 @@ def get_data_fn(n_samples=1000,noise=0.2,seed=0):
 np.random.seed(0)
 
 #n_epochs=500
-n_epochs=1000
-batch_size=700
+n_epochs=400
+batch_size=70
 
 
 X,Y = get_data_fn(n_samples=700,noise=0.0,seed=0)
@@ -32,7 +32,7 @@ yp_gp=gp.predict(Xp,return_std=False)
 
 
 
-cc=CCNet(50,do_rate=0.3,id_dropout=0.0)
+cc=CCNet(10,do_rate=0.2,id_dropout=0.7,shuffle=False)
 cc.fit(X,Y,epochs=n_epochs,batch_size=batch_size,verbose=True)
 
 
