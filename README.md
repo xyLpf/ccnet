@@ -27,9 +27,12 @@ Or:
 
     Yp,ypstd=cc.stochastic_predict(Xp,n_iter=100)
 
-do_rate - Dropout
-id_dropout - Dropout on datapoint with distance 0 during fit.
+do_rate - Dropout. Drops one of the neighbours that is inputted into the model.
+
+id_dropout - Additional Dropout on datapoint with distance 0 during fit.
+
 shuffle - Shuffle order of the neighbors during stochastic predict and fit.
+
 model - Supply own keras model. (See get_model() in model.py)
 
 ## Example
