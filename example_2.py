@@ -25,8 +25,8 @@ Xp=np.linspace(-0.5,0.5,500).reshape(-1,1)
 yp_gp,gp_std=gp.predict(Xp,return_std=True)
 
 
-nn=10
-cc=CCNet(nn,do_rate=0.15,id_dropout=0.1)
+nn=50
+cc=CCNet(nn,do_rate=0.1,id_dropout=0.02)
 cc.fit(X,Y,epochs=n_epochs,batch_size=batch_size,verbose=True)
 Yp2=cc.predict(Xp)
 ypx,_=cc.stochastic_predict(X,100)#predict(X)
