@@ -31,31 +31,8 @@ def lamb3_os(x):
 	return tuple(ll)
 
 	
-	
-def get_model2(n_neighbors,n_dim,n_out,alpha=1e-4):
-	
-	
-	
-	inp1=Input((n_dim,))
-	inp2=Input((n_neighbors,n_dim+n_out))
-	inp_mask=Input((n_neighbors,1))
-	
-	l1 = Lambda(lamb1,output_shape=lamb1_os)
-	l2 = Lambda(lamb2,output_shape=lamb2_os)
-	l3 = Lambda(lamb3,output_shape=lamb3_os)
-	
-	h1=inp1
-	h=Concatenate()([RepeatVector(n_neighbors)(h1),inp2])
-	h=Multiply()([h,inp_mask])
-	h=Concatenate()([h,inp_mask])
-	h=LSTM(32,activation='relu',return_sequences=True)(h)
-	h=LSTM(n_out,return_sequences=False)(h)
-	out=h#Dense(n_out)(h)
-	
-	model=Model([inp1,inp2,inp_mask],out)
-	model.compile(loss='mse',optimizer=Adam(1e-3))
-	return model
-def get_model(n_neighbors,n_dim=1,n_out=1,alpha=1e-10):
+
+def get_model(n_neighbors,n_dim=1,n_out=1,alpha=1e-10,lossfn='mse'):
 	l1 = Lambda(lamb1,output_shape=lamb1_os)
 	l2 = Lambda(lamb2,output_shape=lamb2_os)
 	l3 = Lambda(lamb3,output_shape=lamb3_os)
@@ -67,7 +44,7 @@ def get_model(n_neighbors,n_dim=1,n_out=1,alpha=1e-10):
 	
 	h=l1(inp2)
 	hi=RepeatVector(n_neighbors)(inp1)
-	noise=Lambda(lambda x: tf.random_normal(tf.shape(x),0.0,0.1))(inp2)
+	noise=Lambda(lambda x: tf.random_normal(tf.shape(x),0.0,0.02))(l1(inp2))
 	#noise=RepeatVector(n_neighbors)(noise)
 	
 	h=Add()([h,noise])
@@ -76,7 +53,7 @@ def get_model(n_neighbors,n_dim=1,n_out=1,alpha=1e-10):
 	
 	
 	d_0=TimeDistributed(Dense(32,activation='relu',kernel_regularizer=keras.regularizers.l2(alpha)))
-	d_02=TimeDistributed(Dense(1,kernel_regularizer=keras.regularizers.l2(alpha)))
+	d_02=TimeDistributed(Dense(n_dim,kernel_regularizer=keras.regularizers.l2(alpha)))
 	
 	
 	hh = d_02(d_0(h))
@@ -108,19 +85,20 @@ def get_model(n_neighbors,n_dim=1,n_out=1,alpha=1e-10):
 	
 	
 	model=Model([inp1,inp2,inp_mask],out)
-	model.compile(loss='mse',optimizer=Adam(1e-3))
+	model.compile(loss=lossfn,optimizer=Adam(1e-3))
 	return model
 	
 	
 	
 	
 class CCNet:
-	def __init__(self,n_neighbours,do_rate=0.2,id_dropout=0.9,shuffle=False,model=None):
+	def __init__(self,n_neighbours,do_rate=0.2,id_dropout=0.9,shuffle=False,model=None,loss='mse'):
 		self.nn=n_neighbours
 		self.do_rate=do_rate
 		self.id_dropout=id_dropout
 		self.shuffle=shuffle
 		self.inp_model=model
+		self.lossfn=loss
 	def fit(self,X,Y,epochs=10,batch_size=128,verbose=True):
 		self.n_dim=X.shape[1]
 		self.n_out=Y.shape[1]
@@ -130,7 +108,7 @@ class CCNet:
 		
 		if self.inp_model is None:	
 		
-			self.model=get_model(self.nn,self.n_dim,self.n_out)
+			self.model=get_model(self.nn,self.n_dim,self.n_out,alpha=1e-10,lossfn=self.lossfn)
 		else:
 			self.model = self.inp_model
 		
@@ -229,7 +207,7 @@ class CCNet:
 		#print(X2)
 		return self.model.predict([X,X2,mask])
 		
-	def stochastic_predict(self,X,n_iter=100):
+	def stochastic_predict(self,X,n_iter=100,verbose=True):
 		assert(X.shape[1]==self.n_dim)
 		
 		idx = self.kdt.query(X,self.nn,return_distance=False)
@@ -268,6 +246,7 @@ class CCNet:
 			#	kk = int(np.sum(mask[k]))
 			#	X2p[k,0:kk]=X2[k,mask[k]]
 			preds[n]=self.model.predict([X,X2,mask])
-		
+			if verbose:
+				print(n,n_iter)
 		return  np.mean(preds,0),np.std(preds,0)
 		
