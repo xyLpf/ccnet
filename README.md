@@ -35,5 +35,15 @@ shuffle - Shuffle order of the neighbors during stochastic predict and fit.
 
 model - Supply own keras model. (See get_model() in model.py)
 
-## Example
+## MNIST Example
+
+This example uses a 10D triplet-loss embedding of MNIST as input.
+(https://github.com/omoindrot/tensorflow-triplet-loss is a good implementation of triplet loss if you want to try for yourself).
+
+We see that we can predict on what test samples we will not be able to predict correctly, by using the dropout error.
+
+![Example of usage in 1d](mnist_test.png)
+
+
+## 1D Example
 ![Example of usage in 1d](Figure_1.png)
